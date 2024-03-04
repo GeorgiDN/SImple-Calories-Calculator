@@ -34,6 +34,8 @@ class NutritionTracker:
     def add_food_entry(self):
         print("---Adding a new food---")
         name = self._take_input("Name")
+
+        # Check if name is already in the list
         if any(food.name.lower() == name.lower() for food in self.today):
             print(Back.YELLOW + Fore.BLACK + f"The food with the name '{name}' already exists in the list.")
             return
@@ -58,6 +60,7 @@ class NutritionTracker:
         now = datetime.now()
         current_time = now.strftime("%Y-%m-%d %H:%M:%S")
 
+        # Write food data in text file
         with open('./added_food.txt', "a") as file:
             file.write(f"Date: {current_time} || Food: {name} ||"
                        f"Calories: {calories} || Protein: {protein} || Carbs: {carbs}\n")
