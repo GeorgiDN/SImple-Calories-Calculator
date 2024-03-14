@@ -22,10 +22,10 @@ class NutritionTracker:
         self.today = []
         self.nutrition_goal_for_the_day = {"Calories Goal": 0, "Protein Goal": 0, "Fat Goal": 0, "Carbs Goal": 0}
         self._print_prompt_message()
-        self.CALORIES_GOAL_LIMIT = self._take_integer_input("Calories Goal")
-        self.PROTEIN_GOAL = self._take_integer_input("Protein Goal")
-        self.FATS_GOAL = self._take_integer_input("Fats Goal")
-        self.CARBS_GOAL = self._take_integer_input("Carbs Goal")
+        self.CALORIES_GOAL_LIMIT = self._take_number_input("Calories Goal")
+        self.PROTEIN_GOAL = self._take_number_input("Protein Goal")
+        self.FATS_GOAL = self._take_number_input("Fats Goal")
+        self.CARBS_GOAL = self._take_number_input("Carbs Goal")
         self.nutrition_goal_for_the_day["Calories Goal"] = self.CALORIES_GOAL_LIMIT
         self.nutrition_goal_for_the_day["Protein Goal"] = self.PROTEIN_GOAL
         self.nutrition_goal_for_the_day["Fat Goal"] = self.FATS_GOAL
@@ -40,10 +40,10 @@ class NutritionTracker:
             print(Back.YELLOW + Fore.BLACK + f"The food with the name '{name}' already exists in the list.")
             return
 
-        calories = self._take_integer_input("Calories")
-        protein = self._take_integer_input("Protein")
-        fats = self._take_integer_input("Fats")
-        carbs = self._take_integer_input("Carbs")
+        calories = self._take_number_input("Calories")
+        protein = self._take_number_input("Protein")
+        fats = self._take_number_input("Fats")
+        carbs = self._take_number_input("Carbs")
         food = Food(name, calories, protein, fats, carbs)
         self.today.append(food)
 
@@ -61,7 +61,7 @@ class NutritionTracker:
         current_time = now.strftime("%Y-%m-%d %H:%M:%S")
 
         # Write food data in text file
-        with open('./added_food.txt', "a") as file:
+        with open('added_food.txt', "a") as file:
             file.write(f"Date: {current_time} || Food: {name} ||"
                        f"Calories: {calories} || Protein: {protein} || Carbs: {carbs}\n")
 
@@ -74,23 +74,24 @@ class NutritionTracker:
             fats_sum = sum(food.fats for food in self.today)
             carbs_sum = sum(food.carbs for food in self.today)
 
-            fig, axs = plt.subplots(2, 2)
-            axs[0, 0].pie([protein_sum, fats_sum, carbs_sum], labels=["Proteins", "Fats", "Carbs"],
-                          autopct=lambda p: f'{p * sum([protein_sum, fats_sum, carbs_sum]) / 100:.0f}')
-            axs[0, 0].set_title("Macronutrients Distribution")
-            axs[0, 1].bar([0, 1, 2], [protein_sum, fats_sum, carbs_sum], width=0.4)
-            axs[0, 1].bar([0.5, 1.5, 2.5], [self.PROTEIN_GOAL, self.FATS_GOAL, self.CARBS_GOAL], width=0.4)
-            axs[0, 1].set_title("Macronutrients progress")
-            axs[1, 0].pie([calories_sum, self.CALORIES_GOAL_LIMIT - calories_sum], labels=["Calories", "Remaining"],
-                          autopct=lambda p: f'{p * sum([calories_sum, self.CALORIES_GOAL_LIMIT - calories_sum]) / 100:.0f}')
-            axs[1, 0].set_title("Calories Goal Progress")
-            axs[1, 1].plot(list(range(len(self.today))), np.cumsum([food.calories for food in self.today]), label="Calories Eaten")
-            axs[1, 1].plot(list(range(len(self.today))), [self.CALORIES_GOAL_LIMIT] * len(self.today), label="Calorie Goal")
-            axs[1, 1].legend()
-            axs[1, 1].set_title("Calories Goal Over Time")
+            if calories_sum > 0 and protein_sum > 0 and fats_sum > 0 and carbs_sum > 0:
+                fig, axs = plt.subplots(2, 2)
+                axs[0, 0].pie([protein_sum, fats_sum, carbs_sum], labels=["Proteins", "Fats", "Carbs"], autopct='%1.1f%%')
+                axs[0, 0].set_title("Macronutrients Distribution")
+                axs[0, 1].bar([0, 1, 2], [protein_sum, fats_sum, carbs_sum], width=0.4)
+                axs[0, 1].bar([0.5, 1.5, 2.5], [self.PROTEIN_GOAL, self.FATS_GOAL, self.CARBS_GOAL], width=0.4)
+                axs[0, 1].set_title("Macronutrients progress")
+                axs[1, 0].pie([calories_sum, self.CALORIES_GOAL_LIMIT - calories_sum], labels=["Calories", "Remaining"], autopct='%1.1f%%')
+                axs[1, 0].set_title("Calories Goal Progress")
+                axs[1, 1].plot(list(range(len(self.today))), np.cumsum([food.calories for food in self.today]), label="Calories Eaten")
+                axs[1, 1].plot(list(range(len(self.today))), [self.CALORIES_GOAL_LIMIT] * len(self.today), label="Calorie Goal")
+                axs[1, 1].legend()
+                axs[1, 1].set_title("Calories Goal Over Time")
 
-            fig.tight_layout()
-            plt.show()
+                fig.tight_layout()
+                plt.show()
+            else:
+                print("The progress can not visualise if any macronutrients sum is less than or equal to zero!")
         else:
             print(Back.YELLOW + Fore.BLACK + "There is no added information for food yet!")
 
@@ -137,11 +138,11 @@ class NutritionTracker:
             print(f"{formatted_nutrient} {formatted_value}")
 
     # Helper methods
-    def _take_integer_input(self, nutrient):
+    def _take_number_input(self, nutrient):
         while True:
             try:
                 current_nutrient = float(input(Fore.LIGHTCYAN_EX + f"{nutrient}: "))
-                if current_nutrient > 0:
+                if current_nutrient >= 0:
                     break
                 else:
                     print(Back.YELLOW + Fore.BLACK + "Invalid input! Please enter a number greater than zero!")
@@ -159,7 +160,10 @@ class NutritionTracker:
         return data
 
     def _print_prompt_message(self):
-        return print("---------------Enter your goals!---------------\n")
+        pr_message = ''
+        pr_message += "---------------Enter your goals!---------------\n"
+        pr_message += "The progress can not visualise if any macronutrients sum is less than or equal to zero!"
+        return print(pr_message)
 
 
 if __name__ == "__main__":
